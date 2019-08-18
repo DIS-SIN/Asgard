@@ -1,0 +1,30 @@
+{
+    "namespace": "cortex.streamprocessors.asgard",
+    "type": "record",
+    "name": "OutputData",
+    "doc": "This schema is used to serialize processed data by asgard",
+    "fields": [
+        {"name": "uid", "type": ["string", "long"]},
+        {"name": "data", "type": "array" , "items": {
+            "name": "processedText",
+            "type": "record",
+            "fields": [
+                { "name": "text", "type": "string"},
+                { "name": "language", "type": "string"},
+                { "name": "sentimentScore", "type": "double"},
+                { "name": "magnitudeScore", "type": "double" },
+                { "name": "sentences", "type": "array", "items": {
+                    "name": "processedSentences",
+                    "type": "record",
+                    "fields": [
+                        {"name": "text", "type": "string"},
+                        {"name": "sentimentScore", "type": "double"},
+                        {"name": "magnitudeScore", "type": "double"}
+                    ]
+                  }
+                }
+            ]
+        }
+    }
+    ]
+}

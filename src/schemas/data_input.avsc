@@ -1,0 +1,10 @@
+{
+    "namespace": "cortex.streamprocessors.asgard",
+    "type": "record",
+    "name": "InputData",
+    "doc": "This schema is used to deserialize asgard data processesing requests",
+    "fields": [
+        {"name": "uid", "type": ["string", "integer"]},
+        {"name": "data", "type": "array", "items": "string"}
+    ]
+}
