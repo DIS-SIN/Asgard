@@ -74,6 +74,7 @@ class Producer:
             while not self.__msg_queue.empty():
                 msg = self.__msg_queue.get_nowait()
                 self.__producer.produce(**msg)
+                self.__producer.flush()
                 self.produce_flag = True
                 self.production_last_stoped = 0
         
@@ -111,6 +112,17 @@ class Producer:
                 level="ERROR",
                 delimeter="\n"
             )
+    def __enter__(self):
+        """
+        Context Manager for Producer, to allow custom actions for producing messages
+        """
+        return self.__producer
+    
+    def __exit__(self, *args):
+        """
+        On exit producer is flushed
+        """
+        self.__producer.flush()
 
     # TODO needs to be implemented properly when application logger is sorted
     def __log_msg(self, *messages, level = None, delimeter= " ", ):
