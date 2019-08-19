@@ -6,25 +6,30 @@
     "fields": [
         {"name": "uid", "type": ["string", "long"]},
         {"name": "data", "type": "array" , "items": {
-            "name": "processedText",
-            "type": "record",
-            "fields": [
-                { "name": "text", "type": "string"},
-                { "name": "language", "type": "string"},
-                { "name": "sentimentScore", "type": "double"},
-                { "name": "magnitudeScore", "type": "double" },
-                { "name": "sentences", "type": "array", "items": {
-                    "name": "processedSentences",
+                "name": "processedText",
+                "type": "array",
+                "items": {
+                    "name": "processedTextProvider",
                     "type": "record",
                     "fields": [
-                        {"name": "text", "type": "string"},
-                        {"name": "sentimentScore", "type": "double"},
-                        {"name": "magnitudeScore", "type": "double"}
+                        { "name": "text", "type": "string"},
+                        { "name": "language", "type": "string"},
+                        { "name": "sentimentScore", "type": "double"},
+                        { "name": "magnitudeScore", "type": "double" },
+                        { "name": "provider", "type": "string"},
+                        { "name": "sentences", "type": ["null","array"], "default": null, "items": {
+                                "name": "processedSentences",
+                                "type": "record",
+                                "fields": [
+                                    {"name": "text", "type": "string"},
+                                    {"name": "sentimentScore", "type": "double"},
+                                    {"name": "magnitudeScore", "type": "double"}
+                                ]
+                            }
+                        }
                     ]
-                  }
                 }
-            ]
+            }
         }
-    }
     ]
 }

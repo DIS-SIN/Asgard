@@ -8,7 +8,7 @@ from queue import SimpleQueue
 
 class Producer:
 
-    def __init__(self, broker, schema_registry, schema, logger = None, *topics):
+    def __init__(self, *topics, broker, schema_registry, schema, logger = None):
         """
         Initialization of the Producer which instatiates an AvroProducer class 
 
