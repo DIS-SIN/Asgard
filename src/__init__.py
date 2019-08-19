@@ -125,7 +125,7 @@ def create_stream(environment="production", configs_path="./configs",
         if "SCHEMA_REGISTRY" not in configs:
             scheme_registry_environ = os.environ.get("ASGARD_SCHEMA_REGISTRY")
             if scheme_registry_environ is None:
-                configs["SCHEMA_REGISRTY"] = "http://localhost:8081"
+                configs["SCHEMA_REGISTRY"] = "http://localhost:8081"
             else:
                 configs["SCHEMA_REGISTRY"] = scheme_registry_environ
         
@@ -150,7 +150,7 @@ def create_stream(environment="production", configs_path="./configs",
 
     producer_schema_path = os.path.join(schemas_path, configs["PRODUCER_SCHEMA"])
     with open(producer_schema_path, "r", encoding="utf-8") as f:
-        configs["PRODUCER_SCHEMA"] = str(json.load(f))
+        configs["PRODUCER_SCHEMA"] = json.dumps(json.load(f))
 
     def stream():
         message_consumer = Consumer(

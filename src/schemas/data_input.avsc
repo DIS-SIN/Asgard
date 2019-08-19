@@ -4,7 +4,10 @@
     "name": "InputData",
     "doc": "This schema is used to deserialize asgard data processesing requests",
     "fields": [
-        {"name": "uid", "type": ["string", "integer"]},
-        {"name": "data", "type": "array", "items": "string"}
+        {"name": "uid", "type": ["string", "long"]},
+        {"name": "data", "type": {
+            "name": "text", "type": "array", "items": "string"
+            }
+        }
     ]
 }

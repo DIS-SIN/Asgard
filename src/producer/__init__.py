@@ -25,15 +25,15 @@ class Producer:
         topics
             variable length argument list of the string names of topics to produce too
         """
+        self.schema = avro.loads(schema)
         self.__producer = AvroProducer(
             {
                 "bootstrap.servers": broker,
                 "schema.registry.url": schema_registry
             },
-            default_key_schema=schema
+            default_key_schema=self.schema
         )
         self.topics = topics
-        self.schema = schema
         self.logger = logger
         self.produce_flag = True
         self.production_last_stoped = 0
@@ -65,6 +65,8 @@ class Producer:
         params["value"] = msg
         if schema is not None:
             params["value_schema"] = schema
+        else:
+            params["value_schema"] = self.schema
         if callback is not None:
             params["on_delivery"] = callback
         for topic in self.topics:

@@ -10,10 +10,11 @@ class Google(MLProvider):
         Instatiate the Google Natural Language API ML Providor 
         """
         super().__init__(**kwargs)
+        if "logger" in kwargs:
+            del kwargs["logger"]
         self.__client = language.LanguageServiceClient(
             **kwargs
         )
-        self.logger = kwargs.get("logger")
     def process(self, text):
         """
         Process textual data
