@@ -1,6 +1,6 @@
 from .providers import MLRegistry
 
-def process_text(text, providers, logger=None):
+def process_text(text, providers, logging_enabled=False):
     """
     Process text using one or more providors registered with MLRegistry
 
@@ -25,7 +25,7 @@ def process_text(text, providers, logger=None):
         )
     data = []
     for provider in providers:
-        current_provider = registry.get_class(provider)(logger=logger)
+        current_provider = registry.get_class(provider)(logging_enabled=logging_enabled)
         processed_text = current_provider.process(text)
         if processed_text is not None and not isinstance(processed_text, Exception):
             data.append(processed_text)

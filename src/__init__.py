@@ -1,12 +1,14 @@
 import os
 import json
 import time
+import logging
+import logging.config
 from .producer import Producer
 from .consumer import Consumer
 from .machine_learning_providers import process_text
 
 def create_stream(environment="production", configs_path="./configs", 
-                  schemas_path="./schemas", logger = None):
+                  schemas_path="./schemas"):
 
     # pull default configuration if it exists 
     default_config_path = os.path.join(configs_path, "default.json")
@@ -26,6 +28,12 @@ def create_stream(environment="production", configs_path="./configs",
             with open(production_config_path, "r", encoding="utf-8") as f:
                 configs = {**configs, **json.load(f)}
         
+        if "LOGGING_CONFIG" in configs:
+            logging.config.dictConfig(configs["LOGGING_CONFIG"])
+            logging_enabled = True
+        else:
+            logging_enabled = False
+            
         if "BROKER_HOST" not in configs:
             broker_host_environ = os.environ.get("ASGARD_BROKER_HOST")
             if broker_host_environ is None:
@@ -96,17 +104,25 @@ def create_stream(environment="production", configs_path="./configs",
             )
     # default to development environment if not production
     else:
+        development_config_path = os.path.join(configs_path, "development.json")
+        if os.path.isfile(development_config_path):
+            with open(development_config_path, "r", encoding="utf-8") as f:
+                configs = {**configs, **json.load(f)}
+
+        if "LOGGING_CONFIG" in configs:
+            logging.config.dictConfig(configs["LOGGING_CONFIG"])
+            logging_enabled = True
+
+        else:
+            logging_enabled = False
+        
         if environment != "development":
-            if logger is None:     
+            if not logging_enabled :     
                 print("WARNING: development environment not explicitly set "+
                       f"environment set as {environment}")
             else:
-                logger.warn("development environment not explicitly set " +
+                logging.warn("development environment not explicitly set " +
                             f"environment set as {environment}")
-        development_config_path = os.path.join(configs_path, "development.json")
-        if os.path.isfile(development_config_path):
-            with open(default_config_path, "r", encoding="utf-8") as f:
-                configs = {**configs, **json.load(f)}
         
         if "BROKER_HOST" not in configs:
             broker_host_environ = os.environ.get("ASGARD_BROKER_HOST")
@@ -151,20 +167,20 @@ def create_stream(environment="production", configs_path="./configs",
     producer_schema_path = os.path.join(schemas_path, configs["PRODUCER_SCHEMA"])
     with open(producer_schema_path, "r", encoding="utf-8") as f:
         configs["PRODUCER_SCHEMA"] = json.dumps(json.load(f))
-
+    
     def stream():
         message_consumer = Consumer(
             broker = configs["BROKER_HOST"],
             schema_registry = configs["SCHEMA_REGISTRY"],
             topic = configs["CONSUMER_TOPIC"],
-            logger= logger
+            logging_enabled=logging_enabled
         )
         message_producer = Producer(
             configs["PRODUCER_TOPIC"],
             broker = configs["BROKER_HOST"],
             schema_registry = configs["SCHEMA_REGISTRY"],
             schema = configs["PRODUCER_SCHEMA"],
-            logger = logger
+            logging_enabled=logging_enabled
         )
         while True:
             message = message_consumer.consume()
@@ -176,7 +192,7 @@ def create_stream(environment="production", configs_path="./configs",
                         if isinstance(text, str):
                             start_time = time.time()
                             processed_data.append(
-                              process_text(text, providers = configs["ML_PROVIDERS"], logger=logger)
+                              process_text(text, providers = configs["ML_PROVIDERS"], logging_enabled=logging_enabled)
                             )
                             if environment == "development":
                                 process_time = time.time() - start_time

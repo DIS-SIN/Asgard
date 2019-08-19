@@ -1,6 +1,8 @@
 
 # use a singleton pattern for the registry
 # need to use singleton so as not to rely on global variables for concurrency
+import logging
+
 class MLRegistry:
     class __MLRegistry:
         def __init__(self):
@@ -32,12 +34,31 @@ class MLProviderMeta(type):
 # TODO: abstract class for interface to ensure consistency of methods
 class MLProvider(object, metaclass=MLProviderMeta):
     def __init__(self, **kwargs):
-        self.logger =  kwargs.get("logger")
+        logging_enabled =  kwargs.get("logging_enabled")
+        if logging_enabled == True:
+            self.logger = logging.getLogger(__name__)
+        else:
+            self.logger = None
     # TODO needs to be implemented properly when application logger is sorted
-    def __log_msg(self, *messages, level = None, delimeter= " ", ):
+    def __log_msg(self, *messages, level="NOTSET", delimeter= " "):
+        levels = {
+            "CRITICAL": logging.CRITICAL,
+            "ERROR": logging.ERROR,
+            "WARNING": logging.WARNING,
+            "INFO": logging.INFO,
+            "DEBUG": logging.DEBUG,
+            "NOTSET": logging.NOTSET
+        }
         msg = delimeter.join(messages)
-        if self.logger is not None: 
-            pass
+        if self.logger is not None:
+            if level not in levels:
+                raise ValueError(
+                    f"level {level} is not valid must be one of {list(levels.keys())}"
+                )
+            self.logger.log(
+                levels[level],
+                msg
+            )
         else:
             if level is not None:
                 print(f"LOGGED MESSAGE: {msg}")

@@ -10,8 +10,8 @@ class Google(MLProvider):
         Instatiate the Google Natural Language API ML Providor 
         """
         super().__init__(**kwargs)
-        if "logger" in kwargs:
-            del kwargs["logger"]
+        if "logging_enabled" in kwargs:
+            del kwargs["logging_enabled"]
         self.__client = language.LanguageServiceClient(
             **kwargs
         )

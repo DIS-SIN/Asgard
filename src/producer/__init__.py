@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import traceback
+import logging
 import time
 from confluent_kafka import avro, KafkaException
 from confluent_kafka.avro import AvroProducer, SerializerError
@@ -8,7 +9,7 @@ from queue import SimpleQueue
 
 class Producer:
 
-    def __init__(self, *topics, broker, schema_registry, schema, logger = None):
+    def __init__(self, *topics, broker, schema_registry, schema, logging_enabled = False):
         """
         Initialization of the Producer which instatiates an AvroProducer class 
 
@@ -33,8 +34,11 @@ class Producer:
             },
             default_key_schema=self.schema
         )
+        if logging_enabled:
+            self.logger = logging.getLogger(__name__)
+        else:
+            self.logger = None
         self.topics = topics
-        self.logger = logger
         self.produce_flag = True
         self.production_last_stoped = 0
         self.total_time_producing_stoped = 0
@@ -126,11 +130,25 @@ class Producer:
         """
         self.__producer.flush()
 
-    # TODO needs to be implemented properly when application logger is sorted
-    def __log_msg(self, *messages, level = None, delimeter= " ", ):
+    def __log_msg(self, *messages, level="NOTSET", delimeter= " "):
+        levels = {
+            "CRITICAL": logging.CRITICAL,
+            "ERROR": logging.ERROR,
+            "WARNING": logging.WARNING,
+            "INFO": logging.INFO,
+            "DEBUG": logging.DEBUG,
+            "NOTSET": logging.NOTSET
+        }
         msg = delimeter.join(messages)
         if self.logger is not None:
-            pass
+            if level not in levels:
+                raise ValueError(
+                    f"level {level} is not valid must be one of {list(levels.keys())}"
+                )
+            self.logger.log(
+                levels[level],
+                msg
+            )
         else:
             if level is not None:
                 print(f"LOGGED MESSAGE: {msg}")

@@ -1,11 +1,13 @@
 
+import logging
+import traceback
 from confluent_kafka.avro.serializer import SerializerError
 from confluent_kafka.avro import AvroConsumer
 from confluent_kafka import KafkaError
-import traceback
+
 
 class Consumer:
-    def __init__(self, broker, schema_registry, topic, logger = None, groupId = "asgard"):
+    def __init__(self, broker, schema_registry, topic, logging_enabled = False, groupId = "asgard"):
         """
         Initialiser for Confluent Consumer using AvroConsumer. 
         Each consumer can only be subscribed to one topic 
@@ -30,7 +32,10 @@ class Consumer:
             }
         )
         self.__consumer.subscribe([topic])
-        self.logger = logger
+        if logging_enabled:
+            self.logger = logging.getLogger(__name__)
+        else:
+            self.logger = None
 
     def consume(self):
         """
@@ -80,17 +85,30 @@ class Consumer:
     def __exit__(self, *args):
         self.close()
     
-    # TODO needs to be implemented properly when application logger is sorted
-    def __log_msg(self, *messages, level = None, delimeter= " ", ):
+    def __log_msg(self, *messages, level="NOTSET", delimeter= " ", ):
+        levels = {
+            "CRITICAL": logging.CRITICAL,
+            "ERROR": logging.ERROR,
+            "WARNING": logging.WARNING,
+            "INFO": logging.INFO,
+            "DEBUG": logging.DEBUG,
+            "NOTSET": logging.NOTSET
+        }
         msg = delimeter.join(messages)
         if self.logger is not None:
-            pass
+            if level not in levels:
+                raise ValueError(
+                    f"level {level} is not valid must be one of {list(levels.keys())}"
+                )
+            self.logger.log(
+                levels[level],
+                msg
+            )
         else:
             if level is not None:
                 print(f"LOGGED MESSAGE: {msg}")
             else:
                 print(f"{level}: {msg}")
-
     def close(self):
         """
         Close the consumer, Once called this object cannot be reused

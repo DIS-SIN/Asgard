@@ -2,5 +2,43 @@
   "BROKER_HOST": "localhost:9092",
   "SCHEMA_REGISTRY": "http://localhost:8081",
   "CONSUMER_TOPIC": "text_data_to_be_processed",
-  "PRODUCER_TOPIC": "text_data_processed"
+  "PRODUCER_TOPIC": "text_data_processed",
+  "LOGGING_CONFIG": {
+      "version": 1,
+      "formatters":{
+          "default": {
+              "class": "logging.Formatter",
+              "format": "LEVEL: %(levelname)s\nTIME: %(asctime)s\nFILENAMEL %(filename)s\nMODULE: %(module)s\nMESSAGES: %(message)s\n\n"
+          },
+          "slackFormatter": {
+              "class": "src.utils.logger.SlackFormatter"
+          }
+       },
+       "handlers" : {
+           "console": {
+               "class": "logging.StreamHandler",
+               "level": "NOTSET",
+               "formatter": "default"
+           },
+           "slack": {
+               "class": "src.utils.logger.SlackHandler",
+               "level": "ERROR",
+               "formatter": "slackFormatter"
+           },
+           "file": {
+               "class": "logging.FileHandler",
+               "filename": "./src/development-logs.log",
+               "level": "DEBUG",
+               "formatter": "default"
+           }
+        },
+        "loggers": {
+            "": {
+                "handlers": [
+                   "console", "slack", "file"
+                ],
+                "level": "NOTSET"
+            }
+        }
+    } 
 }
