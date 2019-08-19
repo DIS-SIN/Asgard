@@ -176,7 +176,7 @@ def create_stream(environment="production", configs_path="./configs",
                         if isinstance(text, str):
                             start_time = time.time()
                             processed_data.append(
-                              process_text(text, providers = configs["ML_PROVIDERS"])
+                              process_text(text, providers = configs["ML_PROVIDERS"], logger=logger)
                             )
                             if environment == "development":
                                 process_time = time.time() - start_time
