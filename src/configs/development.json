@@ -8,7 +8,7 @@
       "formatters":{
           "default": {
               "class": "logging.Formatter",
-              "format": "LEVEL: %(levelname)s\nTIME: %(asctime)s\nFILENAMEL %(filename)s\nMODULE: %(module)s\nMESSAGES: %(message)s\n\n"
+              "format": "LEVEL: %(levelname)s TIME: %(asctime)s FILENAMEL %(filename)s MODULE: %(module)s MESSAGES: %(message)s \n"
           },
           "slackFormatter": {
               "class": "src.utils.logger.SlackFormatter"
