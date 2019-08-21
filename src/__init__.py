@@ -173,7 +173,8 @@ def create_stream(environment="production", configs_path="./configs",
             broker = configs["BROKER_HOST"],
             schema_registry = configs["SCHEMA_REGISTRY"],
             topic = configs["CONSUMER_TOPIC"],
-            logging_enabled=logging_enabled
+            logging_enabled=logging_enabled,
+            autocommit=False
         )
         message_producer = Producer(
             configs["PRODUCER_TOPIC"],
@@ -188,26 +189,67 @@ def create_stream(environment="production", configs_path="./configs",
                 processed_data = []
                 textual_data = message.get("data")
                 if isinstance(textual_data, list):
-                    for text in textual_data:
-                        if isinstance(text, str):
-                            start_time = time.time()
-                            processed_data.append(
-                              process_text(text, providers = configs["ML_PROVIDERS"], logging_enabled=logging_enabled)
-                            )
-                            if environment == "development":
-                                process_time = time.time() - start_time
-                                print(
-                                    "Time taken to process data {}".format(process_time)
+                    incorrect_formats = 0
+                    start_time = time.time()
+                    for data in textual_data:
+                        uid = None
+                        correct_format = True
+                        if isinstance(data, dict):
+                            uid = data.get("uid")
+                            text = data.get("text")
+                        else:
+                            correct_format = False
+                        
+                        if correct_format and text is not None and isinstance(text, str):
+                            processed_text = process_text(text, providers = configs["ML_PROVIDERS"], logging_enabled=logging_enabled)
+                            for provider in processed_text:
+                                provider["uid"] = uid
+                        else:
+                            correct_format = False
+                        
+                        if not correct_format:
+                            if logging_enabled:
+                                logging.warning(
+                                    "A message with an incorrect format was recieved\n{}\nfor message {}".format(data, message)
                                 )
-                        # TODO: cases where not string ?
-                data_to_be_sent = {
-                    "uid": message.get("uid"),
-                    "data": processed_data
-                }
+                            else:
+                                print(
+                                    "A message with an incorrect format was recieved\n{}\nfor message {}".format(data, message)
+                                )
+                            incorrect_formats += 1
+                        else:
+                            processed_data.append(processed_text)
+                        
+                    if environment == "development":
+                        process_time = time.time() - start_time
+                        print(
+                            "Time taken to process data {}".format(process_time)
+                        )
+                if isinstance(textual_data, list) and len(textual_data) >incorrect_formats:
+                    data_to_be_sent = {
+                        "uid": message.get("uid"),
+                        "data": processed_data
+                    }
 
-                message_producer.produce(
-                    data_to_be_sent
-                )
+                    message_producer.produce(
+                        data_to_be_sent
+                    )
+                else:
+                    if logging_enabled:
+                        logging.critical(
+                            f"Message {message}\nwill not be sent as a result of none of it's components being the correct format"
+                        )
+                    else:
+                        print(
+                            f"Message {message}\nwill not be sent as a result of none of it's components being the correct format"
+                        )
+                try:
+                    message_consumer.commit(asynchronous=False)
+                except Exception as e:
+                    if logging_enabled:
+                        logging.critical(
+                            "Message commit as failed with the following error {}".format(e)
+                        )
     
     return stream
 

@@ -1,4 +1,4 @@
-
+# command to run python tests/simulate_producer.py "localhost:9092" "http://localhost:8081" "./src/schemas/data_input.avsc" "text_data_to_be_processed"
 import sys
 import os
 import json
@@ -8,13 +8,18 @@ import time
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
 
-if len(sys.argv) < 5:
-    print("Usage: python tests/simulate_producer.py <broker> <schema_registry> <schema_path> <topic>")
+message_limit = False
+
+if len(sys.argv) < 5 or len(sys.argv) > 7:
+    print("Usage: python tests/simulate_producer.py <optional: num_messages> <broker> <schema_registry> <schema_path> <topic>")
 else:
     topic = sys.argv[-1]
     schema_path = sys.argv[-2]
     schema_registry = sys.argv[-3]
     broker = sys.argv[-4]
+    if len(sys.argv) == 6:
+        num_messages = int(sys.argv[-5])
+        message_limit = True
 
 with open(schema_path, "r", encoding = "utf-8") as f:
     schema = json.dumps(json.load(f))
@@ -53,21 +58,34 @@ Do not go gentle into that good night.
 Rage, rage against the dying of the light
 """
 ]
-
-while True:
-    hash = hashlib.sha1()
-    hash.update(str(time.time()).encode("utf-8"))
-    hash = hash.hexdigest()
-    msg = {
-        "uid": "hash",
-        "data": poem
-    }
-    producer.produce(
-        topic = topic,
-        value = msg
+continue_producing = True
+count = 0
+start_time = time.time()
+try: 
+    while continue_producing:
+        hash = hashlib.sha1()
+        hash.update(str(time.time()).encode("utf-8"))
+        hash = hash.hexdigest()
+        msg = {
+            "uid": hash,
+            "data": [ 
+                {"uid": f"{hash}_{count}", "text": text} for text in poem 
+            ]
+        }
+        producer.produce(
+            topic = topic,
+            value = msg
+        )
+        producer.flush()
+        count += 1
+        time.sleep(1)
+        if message_limit:
+            if count >= num_messages:
+                continue_producing = False
+except KeyboardInterrupt:
+    print(
+        f"Procucer is exiting, produced {count} messages in {time.time() - start_time} s "
     )
-    producer.flush()
-    time.sleep(1)
 
 
 

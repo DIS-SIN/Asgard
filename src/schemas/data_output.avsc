@@ -15,6 +15,7 @@
                         "name": "processedTextProvider",
                         "type": "record",
                         "fields": [
+                            { "name": "uid", "type": ["string", "null"]},
                             { "name": "text", "type": "string"},
                             { "name": "language", "type": "string"},
                             { "name": "sentimentScore", "type": "double"},

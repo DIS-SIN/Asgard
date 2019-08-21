@@ -6,7 +6,14 @@
     "fields": [
         {"name": "uid", "type": ["string", "long"]},
         {"name": "data", "type": {
-            "name": "text", "type": "array", "items": "string"
+            "name": "items", "type": "array", "items": {
+                "name": "item",
+                "type": "record",
+                "fields": [
+                    {"name": "uid", "type": ["null", "string", "long"], "default": null},
+                    {"name": "text", "type": "string"}
+                ]
+              }
             }
         }
     ]

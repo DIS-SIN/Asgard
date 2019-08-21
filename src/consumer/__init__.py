@@ -1,13 +1,14 @@
 
 import logging
 import traceback
+from queue import SimpleQueue
 from confluent_kafka.avro.serializer import SerializerError
 from confluent_kafka.avro import AvroConsumer
 from confluent_kafka import KafkaError
 
 
 class Consumer:
-    def __init__(self, broker, schema_registry, topic, logging_enabled = False, groupId = "asgard"):
+    def __init__(self, broker, schema_registry, topic, logging_enabled = False, groupId = "asgard", autocommit = True):
         """
         Initialiser for Confluent Consumer using AvroConsumer. 
         Each consumer can only be subscribed to one topic 
@@ -28,9 +29,13 @@ class Consumer:
             {
                 "bootstrap.servers": broker,
                 "group.id": groupId,
-                "schema.registry.url": schema_registry 
+                "schema.registry.url": schema_registry,
+                "enable.auto.commit": autocommit 
             }
         )
+        self.autocommit = autocommit
+        if not autocommit:
+            self.consumed_messages= SimpleQueue()
         self.__consumer.subscribe([topic])
         if logging_enabled:
             self.logger = logging.getLogger(__name__)
@@ -77,6 +82,10 @@ class Consumer:
                     level="ERROR"
                 )
             else:
+                if not self.autocommit:
+                    self.consumed_messages.put_nowait(
+                        msg
+                    )
                 return msg.value()
  
     def __enter__(self):
@@ -109,6 +118,12 @@ class Consumer:
                 print(f"LOGGED MESSAGE: {msg}")
             else:
                 print(f"{level}: {msg}")
+    def commit(self, asynchronous = True):
+        if not self.autocommit and not self.consumed_messages.empty():
+            msg = self.consumed_messages.get_nowait()
+            self.__consumer.commit(
+                msg, asynchronous = asynchronous
+            )
     def close(self):
         """
         Close the consumer, Once called this object cannot be reused
