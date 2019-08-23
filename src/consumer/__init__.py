@@ -53,6 +53,7 @@ class Consumer:
         None
             No message has been recieved or an error has occured
         """
+        msg = None
         try:
             msg = self.__consumer.poll(1)
         except SerializerError as e:
