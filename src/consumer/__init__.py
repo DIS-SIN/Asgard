@@ -98,7 +98,7 @@ class Consumer:
                         msg
                     )
                 logging.debug("Message Value " + msg.value().decode())
-                return json.loads(msg.value().decode())
+                return json.loads(msg.value().decode()).get("payload")
  
     def __enter__(self):
         return self.__consumer
