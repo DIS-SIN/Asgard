@@ -39,7 +39,7 @@ class Consumer:
                 "bootstrap.servers": broker,
                 "group.id": groupId,
                 "enable.auto.commit": autocommit,
-                "auto.offset.reset": "earliest"
+                "auto.offset.reset": "latest"
             }
         )
         self.autocommit = autocommit
