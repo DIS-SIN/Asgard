@@ -84,8 +84,7 @@ class Consumer:
                 f"{traceback.format_exc()}",
                 delimeter="\n",
                 level= "ERROR"
-            )
-        logging.debug(msg)   
+            ) 
         if not msg is None:
             if msg.error():
                 self.__log_msg(
@@ -97,7 +96,6 @@ class Consumer:
                     self.consumed_messages.put_nowait(
                         msg
                     )
-                logging.debug("Message Value " + msg.value().decode())
                 return json.loads(msg.value().decode()).get("payload")
  
     def __enter__(self):
