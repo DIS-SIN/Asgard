@@ -2,7 +2,7 @@
 import logging
 import traceback
 from queue import SimpleQueue
-# from confluent_kafka.avro.serializer import SerializerError
+from confluent_kafka.avro.serializer import SerializerError
 # from confluent_kafka.avro import AvroConsumer
 from confluent_kafka import KafkaError, Consumer as KafkaConsumer 
 
@@ -35,7 +35,7 @@ class Consumer:
         )"""
         self.__consumer = KafkaConsumer(
             {
-                "bootstrap.serevrs": broker,
+                "bootstrap.servers": broker,
                 "group.id": groupId,
                 "enable.auto.commit": autocommit
             }
