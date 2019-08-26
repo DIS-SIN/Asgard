@@ -4,6 +4,7 @@ import traceback
 from queue import SimpleQueue
 from confluent_kafka.avro.serializer import SerializerError
 # from confluent_kafka.avro import AvroConsumer
+import json
 from confluent_kafka import KafkaError, Consumer as KafkaConsumer 
 
 
@@ -84,7 +85,7 @@ class Consumer:
                 delimeter="\n",
                 level= "ERROR"
             )
-        self.logger.debug(msg)    
+        logging.debug(msg)   
         if not msg is None:
             if msg.error():
                 self.__log_msg(
@@ -96,7 +97,8 @@ class Consumer:
                     self.consumed_messages.put_nowait(
                         msg
                     )
-                return msg.value()
+                logging.debug("Message Value " + msg.value().decode())
+                return json.loads(msg.value().decode())
  
     def __enter__(self):
         return self.__consumer
