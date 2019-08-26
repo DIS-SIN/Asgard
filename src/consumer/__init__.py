@@ -9,7 +9,7 @@ from confluent_kafka import KafkaError, Consumer as KafkaConsumer
 
 
 class Consumer:
-    def __init__(self, broker, schema_registry, topic, logging_enabled = False, groupId = "asgardConsumer", autocommit = True):
+    def __init__(self, broker, schema_registry, topic, logging_enabled = False, groupId = "asgardConsumerGroup", autocommit = True):
         """
         Initialiser for Confluent Consumer using AvroConsumer. 
         Each consumer can only be subscribed to one topic 
