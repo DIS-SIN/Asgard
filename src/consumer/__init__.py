@@ -84,6 +84,7 @@ class Consumer:
                 delimeter="\n",
                 level= "ERROR"
             )
+        self.logger.debug(msg)    
         if not msg is None:
             if msg.error():
                 self.__log_msg(
