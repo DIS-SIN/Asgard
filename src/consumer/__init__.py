@@ -2,9 +2,9 @@
 import logging
 import traceback
 from queue import SimpleQueue
-from confluent_kafka.avro.serializer import SerializerError
-from confluent_kafka.avro import AvroConsumer
-from confluent_kafka import KafkaError
+# from confluent_kafka.avro.serializer import SerializerError
+# from confluent_kafka.avro import AvroConsumer
+from confluent_kafka import KafkaError, Consumer as KafkaConsumer 
 
 
 class Consumer:
@@ -25,12 +25,19 @@ class Consumer:
         groupId: str, Optional
             An optional groupId which can be used to loadbalance consumers default is "asgard"
         """
-        self.__consumer = AvroConsumer(
+        """self.__consumer = AvroConsumer(
             {
                 "bootstrap.servers": broker,
                 "group.id": groupId,
                 "schema.registry.url": schema_registry,
                 "enable.auto.commit": autocommit 
+            }
+        )"""
+        self.__consumer = KafkaConsumer(
+            {
+                "bootstrap.serevrs": broker,
+                "group.id": groupId,
+                "enable.auto.commit": autocommit
             }
         )
         self.autocommit = autocommit
